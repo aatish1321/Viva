@@ -248,7 +248,7 @@ data = resp.parsed or json.loads(resp.text)
 from elevenlabs.client import ElevenLabs
 el = ElevenLabs()  # reads ELEVENLABS_API_KEY
 audio = b"".join(el.text_to_speech.convert(text=text, voice_id=VOICE_ID, model_id=TTS_MODEL, output_format="mp3_44100_128"))
-text = el.speech_to_text.convert(file=io.BytesIO(audio_bytes), model_id="scribe_v2").text
+text = el.speech_to_text.convert(file=io.BytesIO(audio_bytes), model_id="scribe_v3").text
 ```
 If you're not sure about an SDK call, **say so and ask me to paste the docs**. Don't guess.
 ElevenLabs also publishes skills for AI coding assistants: `npx skills add elevenlabs/skills`.
@@ -282,5 +282,3 @@ Checked 2026-11-20.
 | Gemini (newest stable Flash) | `gemini-3.8-flash` | https://ai.google.dev/gemini-api/docs/models (redirects to https://aistudio.google.com/docs/models) |
 | ElevenLabs Text to Speech (low latency) | `eleven_v4_turbo` (fallback: `eleven_flash_v2_5`) | https://elevenlabs.io/docs/models |
 | ElevenLabs Speech to Text (Scribe, file upload) | `scribe_v3` | https://elevenlabs.io/docs/models |
-
-Note: the SDK hint in section 6 says `scribe_v2`, which has been succeeded by `scribe_v3`. Use `scribe_v3`.

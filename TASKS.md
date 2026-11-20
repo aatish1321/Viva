@@ -80,8 +80,9 @@ The user creates the API keys and puts them in `.env` themselves. Do everything 
 
 **A1: Gemini helper** (`agent/gemini.py`)
 - `ask_json(prompt: str, schema, parts: list | None = None) -> dict`
-- Uses the `google-genai` SDK with JSON output and a `GEMINI_MODEL` constant at the top of the file.
+- Uses the `google-genai` SDK with JSON output and two constants at the top of the file: `GEMINI_MODEL = "gemini-3.8-flash"` and `GEMINI_FALLBACK_MODEL = "gemini-3.6-flash"`.
 - Retries once on invalid JSON, then raises a clear error.
+- On 503 / overloaded errors: retry 2 times with a short wait (about 1-2 seconds), then try `GEMINI_FALLBACK_MODEL`. (The setup check hit 503 "high demand" errors and an 18.5s reply on `gemini-3.8-flash`.)
 - Done when: a test call with a tiny schema returns a parsed dict.
 
 **A2: Topic extraction** (`agent/topics.py`)
@@ -132,6 +133,7 @@ The user creates the API keys and puts them in `.env` themselves. Do everything 
 **B1: Text to speech** (`voice/voice.py`)
 - `speak(text) -> bytes` uses the ElevenLabs SDK, reads `ELEVENLABS_VOICE_ID` from `.env` and returns MP3 bytes.
 - Use a low-latency TTS model, with the model ID in a constant.
+- Note: the free ElevenLabs plan only allows **premade** voices via the API (Voice Library voices fail with `paid_plan_required`) and has a monthly character limit. So do **B5 (caching) right after B2**, not at the end.
 - Done when: a test script saves `test.mp3` and it plays a question in the chosen voice.
 
 **B2: Speech to text** (`voice/voice.py`)
