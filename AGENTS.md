@@ -35,17 +35,21 @@ The live mastery map and the "why I'm asking this" line make those decisions vis
 | Voice out | ElevenLabs Text to Speech (`elevenlabs` SDK) |
 | Voice in | ElevenLabs Speech to Text, Scribe model (`elevenlabs` SDK) |
 | Config | `python-dotenv`, with keys in `.env` |
+| Packages | **uv** (`pyproject.toml` + `uv.lock`). No pip, no `requirements.txt` |
 
 **Do NOT use:** LangChain, LlamaIndex, any database, a separate frontend (React etc.), Docker, or vector stores.
 The notes are small, so `lookup_notes` just returns that topic's text.
 
-`requirements.txt`:
-```
-streamlit
-google-genai
-elevenlabs
-python-dotenv
-```
+### uv rules
+- Dependencies live in `pyproject.toml` and `uv.lock`. Both are committed.
+- Add a package: `uv add <package>`. **Never** use `pip install`. Tell the team before adding a package, because everyone has to run `uv sync` afterwards.
+- Run anything through uv, so nobody needs to activate the venv:
+  - App: `uv run streamlit run app.py`
+  - Scripts: `uv run python scripts/check_setup.py`, `uv run python -m agent.run_cli`
+  - Tests: `uv run python -m pytest` (only if pytest has been added)
+- After pulling teammates' changes: `uv sync`.
+
+Starting dependencies: `streamlit`, `google-genai`, `elevenlabs`, `python-dotenv`.
 
 `.env` (never commit it):
 ```
@@ -54,7 +58,7 @@ ELEVENLABS_API_KEY=...
 ELEVENLABS_VOICE_ID=...
 ```
 
-Run: `streamlit run app.py`
+Run: `uv run streamlit run app.py`
 
 ---
 
@@ -81,9 +85,14 @@ viva/
 │   └── fakes.py           # ALL: fake versions of every function (hard-coded examples)
 ├── demo/
 │   └── demo_notes.pdf     # B: lecture used on stage
-├── .env
-├── .gitignore             # .env, __pycache__, .venv
-└── requirements.txt
+├── scripts/
+│   └── check_setup.py     # tests the API keys (S0.4)
+├── .env                   # never committed
+├── .env.example
+├── .gitignore             # .env, CLAUDE.local.md, __pycache__/, .venv/, scripts/test.mp3
+├── .python-version        # made by uv
+├── pyproject.toml         # dependencies (uv)
+└── uv.lock                # exact versions (uv), committed
 ```
 
 ---
@@ -261,3 +270,17 @@ ElevenLabs also publishes skills for AI coding assistants: `npx skills add eleve
 ## 8. My role (edit this line in your own copy)
 
 `I am Person __ (A = agent/brain, B = voice, C = screen + pitch). Current task: ______`
+
+---
+
+## Verified model IDs
+
+Checked 2026-11-20.
+
+| Use | Model ID | Source |
+|---|---|---|
+| Gemini (newest stable Flash) | `gemini-3.8-flash` | https://ai.google.dev/gemini-api/docs/models (redirects to https://aistudio.google.com/docs/models) |
+| ElevenLabs Text to Speech (low latency) | `eleven_v4_turbo` (fallback: `eleven_flash_v2_5`) | https://elevenlabs.io/docs/models |
+| ElevenLabs Speech to Text (Scribe, file upload) | `scribe_v3` | https://elevenlabs.io/docs/models |
+
+Note: the SDK hint in section 6 says `scribe_v2`, which has been succeeded by `scribe_v3`. Use `scribe_v3`.

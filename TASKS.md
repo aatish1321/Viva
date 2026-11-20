@@ -11,16 +11,62 @@
 
 ---
 
-## Shared setup (whoever the team assigns, done once)
+## Environment setup (the night before, done once by one person)
+
+The user creates the API keys and puts them in `.env` themselves. Do everything else.
+**Never print, log or commit the values in `.env`.**
+
+**S0.1: Python environment with uv**
+- Check that uv is installed (`uv --version`). If it isn't, tell the user to install it (`curl -LsSf https://astral.sh/uv/install.sh | sh`) and wait.
+- Run `uv init --name viva` in the repo root, then delete the hello-world `main.py` it creates (keep `pyproject.toml` and `.python-version`).
+- Run `uv add streamlit google-genai elevenlabs python-dotenv`. This creates `.venv` and `uv.lock`.
+- Follow the uv rules in `AGENTS.md`: no pip, no `requirements.txt`.
+- Done when: `uv run python -c "import streamlit, google.genai, elevenlabs, dotenv"` runs without errors.
+
+**S0.2: Git hygiene files**
+- `.gitignore` must contain `.env`, `CLAUDE.local.md`, `__pycache__/`, `.venv/` and `scripts/test.mp3` (add any that are missing, keep the rest).
+- Create `.env.example` with the empty keys `GEMINI_API_KEY=`, `ELEVENLABS_API_KEY=` and `ELEVENLABS_VOICE_ID=`.
+- Check that `.env` exists and that all three keys have values, **without printing them**. If any are missing, tell the user which ones.
+- Done when: `git status` doesn't show `.env`, and `.env.example` exists.
+
+**S0.3: Verify current model IDs**
+- Look up the current model IDs in the official docs (APIs change often, so don't trust memory):
+  - Gemini: the newest **stable Flash** model on https://ai.google.dev/gemini-api/docs/models
+  - ElevenLabs: a **low-latency** Text to Speech model, and the current **Scribe** Speech to Text model, from https://elevenlabs.io/docs
+- Add a section `## Verified model IDs` at the end of `AGENTS.md` listing the three IDs, the date checked and the source URLs.
+- Done when: the user has seen the three IDs and confirmed them.
+
+**S0.4: Setup check script** (`scripts/check_setup.py`)
+- Loads `.env` and runs four checks, printing ✅ or ❌ with a one-line fix for each failure:
+  1. All three keys are present (show only "present" or "missing", never the values)
+  2. Gemini replies to "Say hi in 3 words", using the verified Gemini model
+  3. ElevenLabs Text to Speech saves "Welcome to your oral exam." to `scripts/test.mp3`, using `ELEVENLABS_VOICE_ID`
+  4. ElevenLabs Speech to Text transcribes `scripts/test.mp3` back to text
+- Print how long each API call took.
+- Done when: all four checks pass and the user hears the voice in `scripts/test.mp3`.
+
+**S0.5: Teammate guide** (`SETUP.md`)
+- Short, numbered steps for a teammate on a fresh laptop: install uv, clone the repo, run `gh auth login`, run `uv sync`, copy `.env.example` to `.env` and fill it in, create `CLAUDE.local.md` with their role line (for example `I am Person B (Voice). My folder is voice/.`), then run `uv run python scripts/check_setup.py`.
+- Add a short "Daily commands" box: `uv sync` after every pull, `uv run streamlit run app.py` to start the app, and `uv add <package>` only after telling the team.
+- Done when: the file exists and every command in it has been run successfully at least once on this machine.
+
+**S0.6: Commit and push**
+- Commit `pyproject.toml`, `uv.lock`, `.python-version`, `.gitignore`, `.env.example`, `scripts/check_setup.py`, `SETUP.md` and the `AGENTS.md` update, with the message `S0: environment setup`.
+- First confirm that `.env`, `.venv/`, `CLAUDE.local.md` and `scripts/test.mp3` are **not** staged.
+- Run `git pull --rebase`, then `git push`.
+- Done when: the push succeeds and GitHub shows no `.env`.
+
+---
+
+## Shared setup (at the start of the hackathon, done once)
 
 **S1: Project skeleton**
-- Create the folder structure from `AGENTS.md`, with empty modules.
-- Add `requirements.txt`, a `.gitignore` (`.env`, `CLAUDE.local.md`, `__pycache__`, `.venv`) and a `.env.example` with `GEMINI_API_KEY`, `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID`.
-- Done when: `pip install -r requirements.txt` works and `streamlit run app.py` opens an empty page.
+- Create the folder structure from `AGENTS.md`, with empty modules (`pyproject.toml`, `.gitignore` and `.env.example` already exist from S0).
+- Done when: `uv run streamlit run app.py` opens an empty page.
 
 **S2: `shared/contracts.py`**
 - Copy the TypedDicts from `AGENTS.md` section 4 exactly.
-- Done when: `python -c "import shared.contracts"` runs without errors.
+- Done when: `uv run python -c "import shared.contracts"` runs without errors.
 
 **S3: `shared/fakes.py`**
 - A fake version of every function in `AGENTS.md` section 4, returning realistic hard-coded data in the exact contract shapes:
