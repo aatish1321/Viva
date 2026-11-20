@@ -206,5 +206,5 @@ The user creates the API keys and puts them in `.env` themselves. Do everything 
 ---
 
 ## Priority if time runs short
-Cut in this order: A9 → B6 → B5 → B4 (typed answers still work).
+Cut in this order: A9 → B6 → B4 (typed answers still work).
 **Never cut:** C3 (mastery map), the reason line in C4, A5, A6.
